@@ -77,13 +77,40 @@ describe('tocTools', () => {
   });
 
   describe('yuque_update_toc', () => {
-    it('should update toc', async () => {
-      (mockClient.updateToc as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    it.each([undefined, 'full'] as const)(
+      'should return the full toc with mode %s',
+      async (response_mode) => {
+        (mockClient.updateToc as ReturnType<typeof vi.fn>).mockResolvedValue([
+          { title: 'Updated', uuid: 'u1', doc_id: 1, level: 0, visible: 1 },
+        ]);
+        const result = await tocTools.yuque_update_toc.handler(mockClient, {
+          repo_id: 1,
+          toc_data: 'new toc',
+          ...(response_mode && { response_mode }),
+        } as never);
+        expect(JSON.parse(result.content[0].text)).toEqual([
+          { title: 'Updated', uuid: 'u1', doc_id: 1, level: 0, visible: true },
+        ]);
+        expect(mockClient.updateToc).toHaveBeenCalledWith(1, 'new toc');
+      }
+    );
+
+    it('should return only success and total without formatting a large toc in compact mode', async () => {
+      const toc = Array.from({ length: 10000 }, () => ({
+        get title() {
+          throw new Error('TOC item should not be formatted');
+        },
+      }));
+      (mockClient.updateToc as ReturnType<typeof vi.fn>).mockResolvedValue(toc);
       const result = await tocTools.yuque_update_toc.handler(mockClient, {
         repo_id: 1,
-        toc: 'new toc',
-      } as never);
-      expect(result.content[0].type).toBe('text');
+        toc_data: 'new toc',
+        response_mode: 'compact',
+      });
+
+      expect(JSON.parse(result.content[0].text)).toEqual({ success: true, total: 10000 });
+      expect(result.content[0].text.length).toBeLessThan(100);
+      expect(mockClient.updateToc).toHaveBeenCalledWith(1, 'new toc');
     });
   });
 });

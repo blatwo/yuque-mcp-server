@@ -122,6 +122,11 @@ describe('MCP tool registry contract', () => {
       'lake',
       'html',
     ]);
+    expect(byName.yuque_update_toc.inputSchema.properties?.response_mode.enum).toEqual([
+      'compact',
+      'full',
+    ]);
+    expect(byName.yuque_update_toc.inputSchema.properties?.response_mode.default).toBe('full');
     expect(byName.yuque_get_resource.inputSchema.properties?.resource_type.enum).toEqual(['board']);
     expect(byName.yuque_create_resource.inputSchema.properties?.type.enum).toEqual([
       'mindmap',

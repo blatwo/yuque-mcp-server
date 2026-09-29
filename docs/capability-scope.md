@@ -52,7 +52,7 @@ Docs 对应语雀文档：
 TOC 对应知识库目录：
 
 - `yuque_get_toc`: 读取知识库目录。
-- `yuque_update_toc`: 写入目录操作数据。
+- `yuque_update_toc`: 写入目录操作数据。可选 `response_mode` 为 `full`（默认，返回格式化的完整目录）或 `compact`（只返回 `success: true` 和节点总数 `total`，不格式化完整目录）。`compact` 仅缩小 MCP 返回结果；语雀 `PUT /toc` 仍可能返回完整目录。
 
 ## Notes
 

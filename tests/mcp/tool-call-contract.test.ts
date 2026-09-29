@@ -418,6 +418,19 @@ describe('MCP tools/call contract', () => {
     testCase.assert(http, result);
   });
 
+  it('should return a compact update_toc result through tools/call', async () => {
+    http.put.mockReturnValue(apiResponse([{ title: 'Updated', uuid: 'u2' }]));
+
+    const result = await callTool('yuque_update_toc', {
+      repo_id: 1,
+      toc_data: '{"action":"appendNode"}',
+      response_mode: 'compact',
+    });
+
+    expect(parseJson(result)).toEqual({ success: true, total: 1 });
+    expect(http.put).toHaveBeenCalledWith('/repos/1/toc', '{"action":"appendNode"}');
+  });
+
   it('should map Yuque API errors into MCP tool errors', async () => {
     http.get.mockRejectedValue({
       response: {

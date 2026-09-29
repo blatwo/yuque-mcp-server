@@ -35,14 +35,21 @@ export const tocTools = {
         .describe(
           'Single-operation JSON object. Must include "action" (e.g. "appendNode"), "action_mode" ("child"|"sibling"), "target_uuid" (empty string = root). For new nodes add "type"+"title"; to move existing nodes use "node_uuid".'
         ),
+      response_mode: z.enum(['compact', 'full']).default('full'),
     }),
-    handler: async (client: YuqueClient, args: { repo_id: string | number; toc_data: string }) => {
+    handler: async (
+      client: YuqueClient,
+      args: { repo_id: string | number; toc_data: string; response_mode?: 'compact' | 'full' }
+    ) => {
       const toc = await client.updateToc(args.repo_id, args.toc_data);
       return {
         content: [
           {
             type: 'text' as const,
-            text: JSON.stringify(formatToc(toc), null, 2),
+            text:
+              args.response_mode === 'compact'
+                ? JSON.stringify({ success: true, total: toc.length })
+                : JSON.stringify(formatToc(toc), null, 2),
           },
         ],
       };
